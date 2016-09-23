@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-require_once(dirname(__FILE__).'/lib/bootstrap.php');
+require_once(dirname(__FILE__).'/bootstrap.php');
 
 class MyLoginWindow extends Window {
     public function init() {
