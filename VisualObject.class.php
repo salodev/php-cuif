@@ -31,6 +31,10 @@ abstract class VisualObject {
         $this->_focus = true;
     }
     
+    public function isFocused(){
+        return $this->_focus;
+    }
+    
     public function lostFocus() {
         $this->_focus = false;
     }

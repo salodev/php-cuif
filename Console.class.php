@@ -2,6 +2,8 @@
 
 class Console {
     static private $_outPointer = null;
+    static private $_staticCurosorPosX = 0;
+    static private $_staticCurosorPosY = 0;
     static public function Clear() {
         self::_seq('2J');
     }
@@ -28,6 +30,21 @@ class Console {
     }
     static public function ShowCursor() {
         system("tput cnorm");
+    }
+    
+    static public function SetStaticCursorPos($x, $y) {
+        self::$_staticCurosorPosX = $x;
+        self::$_staticCurosorPosY = $y;
+    }
+    static public function ShowCursorStatic() {
+        if (self::$_staticCurosorPosX === null || self::$_staticCurosorPosY === null) {
+            self::HideCursor();
+        } else {
+            self::ShowCursor();
+            self::Color('5');
+            self::SetPos(self::$_staticCurosorPosX, self::$_staticCurosorPosY);
+            self::Color('0');
+        }
     }
     static private function _seq($seq) {
         self::_out("\e[{$seq}");

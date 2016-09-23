@@ -39,8 +39,9 @@ class Worker {
         $teclaHex = null;
         Console::Clear();
         Console::HideCursor();
+        Console::SetStaticCursorPos(null, null);
         $this->render();
-        Console::SetPos(0, 0);
+        Console::ShowCursorStatic();
         do {
             $teclaHex = bin2hex($tecla);
             if ($this->_stopped) {
@@ -49,7 +50,9 @@ class Worker {
             if ($tecla) {
                 $this->sendMessage($tecla, $teclaHex);
                 Console::Clear();
+                Console::SetStaticCursorPos(null, null);
                 $this->render();
+                Console::ShowCursorStatic();
             }
             if (!$this->_stopped) {
                 $tecla = fread($i,8);
