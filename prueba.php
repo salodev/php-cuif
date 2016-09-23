@@ -16,10 +16,10 @@ class MyLoginWindow extends Window {
             $this->login = json_decode(file_get_contents('login.json'),true);
         }
         
-        $this->inputHost = $this->createInputBox(12, 14, 'HOST    ', $this->login['host']);        
+        $this->inputHost = $this->createInputBox(12, 14, 'HOSTNAME', $this->login['host']);        
         $this->inputDB   = $this->createInputBox(12, 15, 'DATABASE', $this->login['db'  ]);
-        $this->inputUser = $this->createInputBox(12, 16, 'USUARIO ', $this->login['user']);        
-        $this->inputPass = $this->createInputBox(12, 17, 'CLAVE   ', $this->login['pass'], '*');
+        $this->inputUser = $this->createInputBox(12, 16, 'USERNAME', $this->login['user']);        
+        $this->inputPass = $this->createInputBox(12, 17, 'USERPASS', $this->login['pass'], '*');
         
         $this->buttonLogin   = $this->createButton(12, 18, 'LOGIN',  array($this,'onLoginOkPress'));
         $this->buttonCancel  = $this->createButton(22, 18, 'CANCEL', array($this,'onLoginCancelPress'));
@@ -39,9 +39,9 @@ class MyLoginWindow extends Window {
     
     public function onLoginCancelPress() {
         $window = $this->openWindow('Window');
-        $window->title = "SEGURO ?";
+        $window->title = "SURE ?";
         
-        $window->createButton(12, 18, 'SI', array($this,'onConfirmClosePress'));        
+        $window->createButton(12, 18, 'YES', array($this,'onConfirmClosePress'));        
         $window->createButton(20, 18, 'NO', array($this,'onCancelClosePress'));
     }
        
@@ -74,8 +74,8 @@ class KeyDebugger {
     private $_tecla = null;
     private $_teclaHex = null;
     public function render() {
-        Console::Write("Tecla Presionada Imprimible: {$this->_tecla}",1,1);
-        Console::Write("Tecla Presionada HEX       : {$this->_teclaHex}",2,1);
+        Console::Write("Printable Pressed Key: {$this->_tecla}",1,1);
+        Console::Write("HEX Pressed Key      : {$this->_teclaHex}",2,1);
     }
     
     public function input($message, $messageHex) {
