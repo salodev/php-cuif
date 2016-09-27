@@ -1,5 +1,4 @@
 <?php
-
 class InputBox extends VisualObject {
     public $x = 0;
     public $y = 0;
@@ -15,8 +14,7 @@ class InputBox extends VisualObject {
         return $this->_cursorPos;
     }
     public function input($tecla, $teclaHex) {
-        echo $tecla;
-        if (preg_match('/^[a-z0-9\ \.\,\;\:\_\+\-\*\/\=\!\"\#\$\%\&\(\)\'\?\¡\¿\\\\[\]\{\}]+$/i', $tecla) /*&& strlen($tecla)==1*/) {
+        if (preg_match('/^[a-z0-9\ \.\,\;\:\_\+\-\*\/\=\!\"\#\$\%\&\(\)\'\?\Â¡\Â¿\\\\[\]\{\}]+$/i', $tecla) /*&& strlen($tecla)==1*/) {
             if ($this->getCursorPos()==0) {
                 $this->value = $tecla . $this->value;
             } else {
@@ -79,7 +77,8 @@ class InputBox extends VisualObject {
     }
     
     public function render() {
-        Console::SetPos($this->y, $this->x);
+		list($x,$y) = $this->getAbsolutePosition();
+        Console::SetPos($x, $y);
         $label = $this->label?$this->label.' : ':'';
         Console::Write($label);
         if ($this->_focus) {
@@ -87,7 +86,7 @@ class InputBox extends VisualObject {
             if ($this->_cursorPos===null) {
                 $this->_cursorPos = strlen($this->value);
             }
-            Console::SetStaticCursorPos($this->y, $this->x + strlen($label) + $this->_cursorPos);
+            Console::SetStaticCursorPos($x, $y + strlen($label) + $this->_cursorPos);
         }
         Console::Write(str_pad(($this->hideMask?str_repeat($this->hideMask, strlen($this->value)):$this->value), $this->width, '_', STR_PAD_RIGHT));
         Console::Color('0');

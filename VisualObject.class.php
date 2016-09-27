@@ -5,7 +5,12 @@ abstract class VisualObject {
     protected $_objects = array();
     protected $_focus = false;
     protected $_parentObject = null;
-    
+
+    public $x = 0;
+    public $y = 0;
+	public $xOffset = 0;
+	public $yOffset = 0;
+	
     final public function __construct(Application $application, $parentObject = null) {
         $this->_application = $application;
         if ($parentObject != null && !($parentObject instanceof VisualObject)) {
@@ -47,6 +52,17 @@ abstract class VisualObject {
         $this->addObject($object);
         return $object;
     }
+
+	public function getAbsolutePosition() {
+		$parentX = 0;
+		$parentY = 0;
+		if ($this->_parentObject instanceof VisualObject) {
+			$pos = $this->_parentObject->getAbsolutePosition();
+			$parentX = $pos[0];
+			$parentY = $pos[1];
+		}
+		return array($this->x + $this->xOffset + $parentX, $this->y + $this->yOffset + $parentY);
+	}
     
     public function openWindow($className) {
         return $this->_application->openWindow($className);

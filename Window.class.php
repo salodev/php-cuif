@@ -4,6 +4,8 @@ class Window extends VisualObject {
     public $tabStop = 0;
     public $x = 10;
     public $y = 10;
+	public $xOffset = 1;
+	public $yOffset = 3;
     public $height = 10;
     public $width = 40;
     public $title = null;
@@ -49,13 +51,14 @@ class Window extends VisualObject {
     }
     
     public function render() {
-        Console::Write('+' . str_repeat('-', $this->width - 2) .'+', $this->y+0, $this->x);
-        Console::Write('| ' . str_pad($this->title, $this->width - 4, ' ', STR_PAD_RIGHT) .' |', $this->y+1, $this->x);
-        Console::Write('+' . str_repeat('-', $this->width - 2) .'+', $this->y+2, $this->x);
-        for($i=1;$i<$this->height;$i++) {            
-            Console::Write('|' . str_repeat(' ', $this->width - 2) . '|', $this->y+$i+2, $this->x);
+		$y = $this->y;
+        Console::Write('+' . str_repeat('-', $this->width - 2) .'+', $this->x, $y);
+        Console::Write('| ' . str_pad($this->title, $this->width - 4, ' ', STR_PAD_RIGHT) .' |', $this->x, ++$y);
+        Console::Write('+' . str_repeat('-', $this->width - 2) .'+', $this->x, ++$y);
+        for($i=1;$i<=$this->height;$i++) {            
+            Console::Write('|' . str_repeat(' ', $this->width - 2) . '|', $this->x, ++$y);
         }
-        Console::Write('+' . str_repeat('-', $this->width - 2) .'+', $this->y+$this->height+2, $this->x);
+        Console::Write('+' . str_repeat('-', $this->width - 2) .'+', $this->x, ++$y);
         foreach($this->_objects as $object) {
             $object->render();
         }
@@ -68,6 +71,15 @@ class Window extends VisualObject {
             'label'    => $label,
             'value'    => $value,
             'hideMask' => $hideMask,
+        ));
+    }
+
+    public function createCheckBox($x, $y, $label, $checked = false) {
+        return $this->createObject('CheckBox', array(
+            'x'        => $x,
+            'y'        => $y,
+            'label'    => $label,
+            'checked'    => $checked,
         ));
     }
     

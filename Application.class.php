@@ -1,5 +1,4 @@
 <?php
-
 abstract class Application {
     protected $_worker = null;
     protected $_objects = array();

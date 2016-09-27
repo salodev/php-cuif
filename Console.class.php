@@ -8,7 +8,7 @@ class Console {
         self::_seq('2J');
     }
     static public function SetPos($x,$y) {
-        self::_seq("{$x};{$y}f");
+        self::_seq("{$y};{$x}f");
     }
     static public function Write($text, $x=null, $y=null) {
         if ($x !==null&&$y!==null){
@@ -51,7 +51,7 @@ class Console {
     }
     static private function _getOutPointer() {
         if (self::$_outPointer===NULL) {
-            self::$_outPointer = STDOUT;
+            self::$_outPointer = fopen('php://stdout', 'w');
         }
         return self::$_outPointer;
     }

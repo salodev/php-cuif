@@ -11,4 +11,5 @@ class Input {
     const KEY_TAB         = '09';
     const KEY_RETURN      = '0a';
     const KEY_BACKSPACE   = '7f';
+    const KEY_SPACE       = '20';
 }

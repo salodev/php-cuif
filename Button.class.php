@@ -13,13 +13,14 @@ class Button extends VisualObject {
     }
     
     public function render() {
+		list($x,$y) = $this->getAbsolutePosition();
         if ($this->width==null) {
             $this->width = strlen($this->label)+2;
         }
         if ($this->_focus) {
             Console::Color('7');
         }
-        Console::Write('[' . str_pad($this->label, $this->width, ' ', STR_PAD_BOTH) . ']', $this->y, $this->x);
+        Console::Write('[' . str_pad($this->label, $this->width, ' ', STR_PAD_BOTH) . ']', $x, $y);
         Console::Color('0');
     }
     

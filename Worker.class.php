@@ -8,11 +8,6 @@ class Worker {
             $object->input($message, $messageHex);
         }
         return;
-        $index = count($this->_objects) -1;
-        if ($index <0) {
-            return;
-        }
-        $this->_objects[$index]->input($message, $messageHex);
     }
     
     public function render() {
@@ -36,7 +31,7 @@ class Worker {
         // $term = `stty -g`;
         system("stty -icanon");
         $tecla = '';
-        $teclaHex = null;
+        $teclaHex = '';
         Console::Clear();
         Console::HideCursor();
         Console::SetStaticCursorPos(null, null);
@@ -47,7 +42,7 @@ class Worker {
             if ($this->_stopped) {
                 break;
             }
-            if ($tecla) {
+            if (strlen($teclaHex)) {
                 $this->sendMessage($tecla, $teclaHex);
                 Console::Clear();
                 Console::SetStaticCursorPos(null, null);
