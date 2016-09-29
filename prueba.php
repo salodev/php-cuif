@@ -132,12 +132,13 @@ class MyApplication extends Application {
     }
 }
 
-$con = new MysqlConnection('localhost', 'root', 'salocord', 'mysql');
+$con = new MysqlConnection('localhost', 'root', '', 'mysql');
 $con->query("SELECT 'hola diana'", function($rs) {
 	Worker::AddTask(function() use ($rs) {
 		Console::Clear();
 		Console::SetPos(1,1);
 		print_r($rs);
+		Console::Write('Press CONTROL+C to exit');
 	
 	}, true);
 });
