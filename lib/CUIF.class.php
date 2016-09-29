@@ -6,7 +6,7 @@ class CUIF {
 		if (!$application instanceof Application) {
 			throw new Exception('Must be an Application instance');
 		}
-		Worker2::AddTask(function() use($application) {
+		Worker::AddTask(function() use($application) {
 			Console::Clear();
 			Console::HideCursor();
 			Console::SetStaticCursorPos(null, null);
