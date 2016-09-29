@@ -1,6 +1,6 @@
 #!/opt/php5-6/bin/php
 <?php
-require_once(dirname(__FILE__).'/bootstrap.php');
+require_once(dirname(__FILE__).'/lib/bootstrap.php');
 
 class MyListWindow extends Window {
 	public function init() {
@@ -132,10 +132,14 @@ class MyApplication extends Application {
     }
 }
 
-$worker = new Worker();
-$myApp = new MyApplication($worker);
-$myApp->main();
-$worker->addObject(new KeyDebugger());
-$worker->addObject($myApp);
-
-$worker->start();
+$con = new MysqlConnection('localhost', 'root', 'salocord', 'mysql');
+$con->query("SELECT 'hola diana'", function($rs) {
+	Worker::AddTask(function() use ($rs) {
+		Console::Clear();
+		Console::SetPos(1,1);
+		print_r($rs);
+	
+	}, true);
+});
+Worker::Start();
+// CUIF::StartApplication('MyApplication');
