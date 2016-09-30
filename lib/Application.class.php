@@ -1,6 +1,19 @@
 <?php
 abstract class Application {
     protected $_objects = array();
+	private $_eventsHandler = null;
+	
+	final public function __construct() {
+		$this->_eventsHandler = new EventsHandler();
+	}
+	
+	public function trigger($eventName, $params = null) {
+		$this->_eventsHandler->trigger($eventName, $this, $params);
+	}
+	
+	public function bind($eventName, $eventListener, $persistent = true) {
+		$this->_eventsHandler->addListener($eventName, $eventListener, $persistent);
+	}
     
     public function getActiveWindow() {
         $index = count($this->_objects) -1;
@@ -27,7 +40,7 @@ abstract class Application {
     }
     
     final public function input($message, $messageHex) {
-        $this->onMessage($message, $messageHex);
+        $this->trigger('keyPress', array($message, $messageHex));
         $window = $this->getActiveWindow();
         if ($window) {
             $window->input($message, $messageHex);
@@ -38,10 +51,21 @@ abstract class Application {
         foreach($this->_objects as $object) {
             $object->render();
         }
-    }
-    
-    public function onMessage($message, $messageHex) {
-        
+		$aw = $this->getActiveWindow();
+		if (!($aw instanceof Window)) {
+			return;
+		}
+		
+		$toolKeys = $aw->getToolKeys();
+		$cdim = Console::GetDimensions();
+		Console::SetPos(1, $cdim['y']);
+		foreach($toolKeys as $key => $text) {
+			Console::Write("{$key} ");
+			Console::Color('7');
+			Console::Write(" {$text} ");
+			Console::Color(0);
+			Console::Write("  ");
+		}
     }
     
     public function addObject(VisualObject $object){
@@ -64,12 +88,29 @@ abstract class Application {
         }
         $this->addObject($object);
     }
+	
+	public function getObjectsCount() {
+		return count($this->_objects);
+	}
     
-    public function openWindow($className) {
-        $windowObject = new $className($this);
+    public function openWindow($className, array $params = array()) {
+        $windowObject = new $className($this, null, $params);
         $this->addObject($windowObject);
         return $windowObject;
     }
+	
+	public function confirmWindow($text, $fnConfirm = null, $fnCancel = null) {
+		$window = $this->openWindow('ConfirmWindow', array(
+			'text' => $text,
+		));
+		if ($fnConfirm !== null) {
+			$window->bind('confirm', $fnConfirm);
+		}
+		if ($fnCancel !== null) {
+			$window->bind('cancel', $fnCancel);
+		}
+		return $window;
+	}
     
     public function end() {
 		Worker::Stop();

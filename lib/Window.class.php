@@ -9,7 +9,21 @@ class Window extends VisualObject {
     public $height = 10;
     public $width = 40;
     public $title = null;
+	public $windowIndex = null;
     protected $_focusedObject = null;
+	private $_toolKeys = array();
+	
+	public function addToolKey($key, $text) {
+		$this->_toolKeys[$key] = $text;
+	}
+	
+	public function setToolKeys(array $toolKeys) {
+		$this->_toolKeys = $toolKeys;
+	}
+	
+	public function getToolKeys() {
+		return $this->_toolKeys;
+	}
     
     public function addObject(VisualObject $object){
         parent::addObject($object);
@@ -48,6 +62,8 @@ class Window extends VisualObject {
         if ($this->_focusedObject !== null) {
             $this->_focusedObject->input($tecla, $teclaHex);
         }
+		
+		$this->trigger('keyPress', array($tecla,$teclaHex));
     }
     
     public function render() {
@@ -71,6 +87,15 @@ class Window extends VisualObject {
             'label'    => $label,
             'value'    => $value,
             'hideMask' => $hideMask,
+        ));
+    }
+    
+    public function createLabelBox($x, $y, $value, $title = null) {
+        return $this->createObject('LabelBox', array(
+            'x'        => $x,
+            'y'        => $y,
+            'value'    => $value,
+            'title'    => $title,
         ));
     }
 

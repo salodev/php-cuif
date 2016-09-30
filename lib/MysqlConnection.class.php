@@ -10,20 +10,24 @@ class MysqlConnection {
 	}
 	public function query($query, $callback) {
 		$ret = mysqli_query($this->_link, $query, MYSQLI_ASYNC);
-		if ($ret) {
-			$conn = $this;
-			Worker::AddTask(function() use($conn, $callback) {
-				if ($conn->poll()) {
-					$result = $conn->reapAsyncQuery();
-					$rs = array();
-					while($row = $result->fetch_assoc()) {
-						$rs[] = $row;
-					}
-					$result->free();
-					$callback($rs);
-				};
-			}, true);
+		if (!$ret) {
+			throw new Exception(mysqli_error($this->_link), mysqli_errno($this->_link));
 		}
+		$conn = $this;
+		Worker::AddTask(function() use($conn, $callback) {
+			if ($conn->poll()) {
+				$result = $conn->reapAsyncQuery();
+				if (!$result) {
+					throw new Exception(mysqli_error($this->_link), mysqli_errno($this->_link));
+				}
+				$rs = array();
+				while($row = $result->fetch_assoc()) {
+					$rs[] = $row;
+				}
+				$result->free();
+				$callback($rs);
+			};
+		}, true);
 	}
 	public function poll() {
 		$links = array($this->_link);

@@ -1,7 +1,7 @@
 <?php
 
 class CUIF {
-	static public function StartApplication($applicationClassName) {
+	static public function StartApplication($applicationClassName, $keyDebug = false) {
 		$application = new $applicationClassName;
 		if (!$application instanceof Application) {
 			throw new Exception('Must be an Application instance');
@@ -13,11 +13,15 @@ class CUIF {
 			$application->render();
 			Console::ShowCursorStatic();
 		}, true); // will be killed after execution.
-		Worker::AddTask(function() use($application) {
+		Worker::AddTask(function() use($application, $keyDebug) {
 			$input = Console::Read();
 			if (strlen($input)) {
-				$application->input($input, bin2hex($input));
                 Console::Clear();
+				if ($keyDebug) {
+					Console::Write('Printable Pressed Key: ' . $input,0,1);
+					Console::Write('HEX Pressed Key      : ' . bin2hex($input),0,2);
+				}
+				$application->input($input, bin2hex($input));
                 Console::SetStaticCursorPos(null, null);
                 $application->render();
                 Console::ShowCursorStatic();

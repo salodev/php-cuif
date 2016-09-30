@@ -5,6 +5,16 @@ class Console {
     static private $_outPointer = null;
     static private $_staticCurosorPosX = 0;
     static private $_staticCurosorPosY = 0;
+	
+	static public function GetDimensions() {
+		$res = array();
+		preg_match("/rows.([0-9]+);\scolumns\s([0-9]+);/", strtolower(exec('stty -a |grep columns')), $res);
+		return array(
+			'x'=>$res[2],
+			'y'=>$res[1],
+		);
+	}
+	
     static public function Clear() {
         self::_seq('2J');
     }

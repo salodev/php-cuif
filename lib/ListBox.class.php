@@ -46,7 +46,7 @@ class ListBox extends VisualObject {
 		}
 	}
 
-	public function addColumn($title, $name, $width, $align, $visible) {
+	public function addColumn($title, $name, $width, $align = 1, $visible = true) {
 		$this->_columns[] = (object) array(
 			'title'   => $title,
 			'name'    => $name,
@@ -58,6 +58,12 @@ class ListBox extends VisualObject {
 	public function addRow(array $data) {
 		$this->_data[] = $data;
 	}
+	public function setData(array $data) {
+		$this->_data = $data;
+	}
+	public function clear() {
+		$this->_data = array();
+	}
 
 	public function hideColumn($index) {
 		$this->_columns[$index]['visible'] = false;
@@ -65,6 +71,13 @@ class ListBox extends VisualObject {
 
 	public function showColumn($index) {
 		$this->_columns[$index]['visible'] = true;
+	}
+	
+	public function getDataRow($columnName = null) {
+		if ($columnName !==null) {
+			return $this->_data[$this->_selectedIndex][$columnName];
+		}
+		return $this->_data[$this->_selectedIndex];
 	}
 
 	public function render() {
