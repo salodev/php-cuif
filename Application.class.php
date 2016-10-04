@@ -1,11 +1,19 @@
 <?php
 abstract class Application {
-    protected $_worker = null;
     protected $_objects = array();
-    
-    final public function __construct(Worker $worker) {
-        $this->_worker = $worker;
-    }
+	private $_eventsHandler = null;
+	
+	final public function __construct() {
+		$this->_eventsHandler = new EventsHandler();
+	}
+	
+	public function trigger($eventName, $params = null) {
+		$this->_eventsHandler->trigger($eventName, $this, $params);
+	}
+	
+	public function bind($eventName, $eventListener, $persistent = true) {
+		$this->_eventsHandler->addListener($eventName, $eventListener, $persistent);
+	}
     
     public function getActiveWindow() {
         $index = count($this->_objects) -1;
@@ -27,12 +35,13 @@ abstract class Application {
         }
         
         if ($this->_objects[$index] instanceof VisualObject) {
+			$this->_objects[$index]->hide();
             $this->removeObject($index);
         }
     }
     
     final public function input($message, $messageHex) {
-        $this->onMessage($message, $messageHex);
+        $this->trigger('keyPress', array($message, $messageHex));
         $window = $this->getActiveWindow();
         if ($window) {
             $window->input($message, $messageHex);
@@ -40,13 +49,26 @@ abstract class Application {
     }
     
     final public function render() {
+		$layer = Screen::GetInstance()->getLayerByIndex(0);
         foreach($this->_objects as $object) {
             $object->render();
         }
-    }
-    
-    public function onMessage($message, $messageHex) {
-        
+		$aw = $this->getActiveWindow();
+		if (!($aw instanceof Window)) {
+			return;
+		}
+		
+		$toolKeys = $aw->getToolKeys();
+		list(, $cdimY) = Console::GetDimensions();
+		$layer->setPos(1, $cdimY);
+		foreach($toolKeys as $key => $text) {
+			$layer->write("{$key} ");
+			$layer->color('7');
+			$layer->write(" {$text} ");
+			$layer->color(0);
+			$layer->write("  ");
+		}
+		Screen::GetInstance()->refresh();
     }
     
     public function addObject(VisualObject $object){
@@ -69,15 +91,32 @@ abstract class Application {
         }
         $this->addObject($object);
     }
+	
+	public function getObjectsCount() {
+		return count($this->_objects);
+	}
     
-    public function openWindow($className) {
-        $windowObject = new $className($this);
+    public function openWindow($className, array $params = array()) {
+        $windowObject = new $className($this, null, $params);
         $this->addObject($windowObject);
         return $windowObject;
     }
+	
+	public function confirmWindow($text, $fnConfirm = null, $fnCancel = null) {
+		$window = $this->openWindow('ConfirmWindow', array(
+			'text' => $text,
+		));
+		if ($fnConfirm !== null) {
+			$window->bind('confirm', $fnConfirm);
+		}
+		if ($fnCancel !== null) {
+			$window->bind('cancel', $fnCancel);
+		}
+		return $window;
+	}
     
     public function end() {
-        $this->_worker->stop();
+		Worker::Stop();
     }
     
     abstract public function main();

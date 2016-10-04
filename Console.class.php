@@ -1,15 +1,27 @@
 <?php
 
 class Console {
+    static private $_inPointer = null;
     static private $_outPointer = null;
     static private $_staticCurosorPosX = 0;
     static private $_staticCurosorPosY = 0;
+	
+	static public function GetDimensions() {
+		$res = array();
+		preg_match("/rows.([0-9]+);\scolumns\s([0-9]+);/", strtolower(exec('stty -a |grep columns')), $res);
+		return array($res[2], $res[1]);
+	}
+	
     static public function Clear() {
         self::_seq('2J');
     }
     static public function SetPos($x,$y) {
         self::_seq("{$y};{$x}f");
     }
+	static public function Read() {
+		$i = self::_getInPointer();
+		return fread($i,8);
+	}
     static public function Write($text, $x=null, $y=null) {
         if ($x !==null&&$y!==null){
             self::SetPos($x, $y);
@@ -48,6 +60,14 @@ class Console {
     }
     static private function _seq($seq) {
         self::_out("\e[{$seq}");
+    }
+    static private function _getInPointer() {
+        if (self::$_inPointer===NULL) {
+			system("stty -icanon -echo");
+            self::$_inPointer = fopen('php://stdin', 'w');
+			stream_set_blocking(self::$_inPointer, 0);
+        }
+        return self::$_inPointer;
     }
     static private function _getOutPointer() {
         if (self::$_outPointer===NULL) {

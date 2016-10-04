@@ -1,66 +1,38 @@
 <?php
 
 class Worker {
-    private $_objects = array();
-    private $_stopped = false;
-    public function sendMessage($message, $messageHex) {
-        foreach($this->_objects as $object) {
-            $object->input($message, $messageHex);
-        }
-        return;
-    }
-    
-    public function render() {
-        foreach($this->_objects as $object) {
-            $object->render();
-        }
-    }
-    
-    public function addObject($object){
-        $this->_objects[] = $object;
-    }
-    
-    public function removeObject($index) {
-        unset($this->_objects[$index]);
-        $this->_objects = array_values($this->_objects);
-    }
-    
-    public function start() {
-        $i = fopen('php://stdin',  'r');
-        stream_set_blocking($i, 0);
-        // $term = `stty -g`;
-        system("stty -icanon");
-        $tecla = '';
-        $teclaHex = '';
-        Console::Clear();
-        Console::HideCursor();
-        Console::SetStaticCursorPos(null, null);
-        $this->render();
-        Console::ShowCursorStatic();
-        do {
-            $teclaHex = bin2hex($tecla);
-            if ($this->_stopped) {
-                break;
-            }
-            if (strlen($teclaHex)) {
-                $this->sendMessage($tecla, $teclaHex);
-                Console::Clear();
-                Console::SetStaticCursorPos(null, null);
-                $this->render();
-                Console::ShowCursorStatic();
-            }
-            if (!$this->_stopped) {
-                $tecla = fread($i,8);
-            }
-            
-            //sleep(1);
-        } while(true);
-        Console::Clear();
-        Console::SetPos(0, 0);
-        Console::ShowCursor();
-    }
-        
-    public function stop() {
-        $this->_stopped = true;
-    }
+	static private $_stopped = true;
+	static private $_tasks = array();
+	static public function Start($usleep = 1) {
+		self::$_stopped = false;
+		while (true) {
+			usleep($usleep);
+			foreach(self::$_tasks as $taskIndex => $taskInfo) {
+				if (self::$_stopped) {
+					break 2;
+				}
+				$taskInfo[0]();
+				if ($taskInfo[1]===true) {
+					self::removeTask($taskIndex);
+				}
+			}
+		};
+	}
+	static public function Stop() {
+		self::$_stopped = true;
+	}
+	static public function AddTask($callback, $removeSiceExec = false) {
+		self::$_tasks[] = array($callback, $removeSiceExec);
+		end(self::$_tasks);
+		return key(self::$_tasks); // returns index id.
+	}
+	static public function RemoveTask($taskIndex) {
+		unset(self::$_tasks[$taskIndex]);
+	}
+	static public function IsRunning() {
+		return !self::$_stopped;
+	}
+	static public function GetCountTasks() {
+		return count(self::$_tasks);
+	}
 }

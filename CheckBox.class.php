@@ -10,14 +10,15 @@ class CheckBox extends VisualObject {
     }
 
     public function render() {
+		$layer = $this->getScreenLayer();
 		list($x,$y) = $this->getAbsolutePosition();
-        Console::SetPos($x, $y);
+        $layer->setPos($x, $y);
         $label = $this->label?$this->label.' : ':'';
-        Console::Write($label);
+        $layer->write($label);
         if ($this->_focus) {
-            Console::Color('7');
+            $layer->color('7');
         }
-        Console::Write('[' . ($this->checked? 'X' : ' ') . ']');
-        Console::Color('0');
+        $layer->write('[' . ($this->checked? 'X' : ' ') . ']');
+        $layer->color('0');
 	}
 }

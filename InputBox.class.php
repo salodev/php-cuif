@@ -1,4 +1,5 @@
 <?php
+
 class InputBox extends VisualObject {
     public $x = 0;
     public $y = 0;
@@ -77,18 +78,19 @@ class InputBox extends VisualObject {
     }
     
     public function render() {
+		$layer = $this->getScreenLayer();
 		list($x,$y) = $this->getAbsolutePosition();
-        Console::SetPos($x, $y);
+        $layer->setPos($x, $y);
         $label = $this->label?$this->label.' : ':'';
-        Console::Write($label);
+        $layer->write($label);
         if ($this->_focus) {
-            Console::Color('7');
+            $layer->color('7');
             if ($this->_cursorPos===null) {
                 $this->_cursorPos = strlen($this->value);
             }
             Console::SetStaticCursorPos($x + strlen($label) + $this->_cursorPos, $y);
         }
-        Console::Write(str_pad(($this->hideMask?str_repeat($this->hideMask, strlen($this->value)):$this->value), $this->width, '_', STR_PAD_RIGHT));
-        Console::Color('0');
+        $layer->write(str_pad(($this->hideMask?str_repeat($this->hideMask, strlen($this->value)):$this->value), $this->width, '_', STR_PAD_RIGHT));
+        $layer->color('0');
     }
 }
