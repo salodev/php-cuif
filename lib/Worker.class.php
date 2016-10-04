@@ -3,9 +3,10 @@
 class Worker {
 	static private $_stopped = true;
 	static private $_tasks = array();
-	static public function Start() {
+	static public function Start($usleep = 1) {
 		self::$_stopped = false;
 		while (true) {
+			usleep($usleep);
 			foreach(self::$_tasks as $taskIndex => $taskInfo) {
 				if (self::$_stopped) {
 					break 2;

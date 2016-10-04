@@ -24,6 +24,7 @@ class DatabasesListWindow extends \Window {
 		$this->_connection->query('SHOW DATABASES', function($rs) {
 			$this->list->setData($rs);
 			$this->render();
+			\Screen::GetInstance()->refresh();
 		});
 	}
 }

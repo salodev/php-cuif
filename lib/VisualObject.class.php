@@ -6,6 +6,7 @@ abstract class VisualObject {
     protected $_focus = false;
     protected $_parentObject = null;
 	protected $_eventsHandler = null;
+	protected $_screenLayer = null;
 
     public $x = 0;
     public $y = 0;
@@ -19,7 +20,9 @@ abstract class VisualObject {
             throw new Exception('parentObject must be an VisualObject instance');
         }
         $this->_parentObject = $parentObject;
+		$this->getScreenLayer();
         $this->init($params);
+		$this->render();
     }
 	
 	public function trigger($eventName, $params = null) {
@@ -80,6 +83,16 @@ abstract class VisualObject {
     
 	public function input($mensaje, $mensajeHex) {
 		
+	}
+	
+	public function getScreenLayer() {
+		if ($this->_screenLayer===null) {
+			if ($this->_parentObject!==null) {
+				return $this->_parentObject->getScreenLayer();
+			}
+			$this->_screenLayer = Screen::GetInstance()->createLayer();
+		}
+		return $this->_screenLayer;
 	}
 	
     abstract public function render();

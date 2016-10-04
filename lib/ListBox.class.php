@@ -6,11 +6,12 @@ class ListBox extends VisualObject {
 	private $_selectedIndex = 0;
 	private $_holeVPosition  = 0;
 	private $_holeHPosition  = 0;
+	private $_layerHole = null;
 	public $height = null;
 	public $width  = null;
 
 	public function input($msg, $hexMsg) {
-
+		$render = false;
 		$height = $this->height;
 		if ($this->_parentObject != null) {
 			if ($height == null) {
@@ -19,15 +20,33 @@ class ListBox extends VisualObject {
 		}
 		if ($hexMsg==Input::KEY_ARROW_UP) {
 			$this->_selectedIndex--;
+			$render = true;
 		}
 		if ($hexMsg==Input::KEY_ARROW_DOWN) {
 			$this->_selectedIndex++;
+			$render = true;
 		}
 		if ($hexMsg==Input::KEY_ARROW_LEFT) {
 			$this->_holeHPosition-=4;
 		}
 		if ($hexMsg==Input::KEY_ARROW_RIGHT) {
 			$this->_holeHPosition+=4;
+		}
+		if ($hexMsg==Input::KEY_PAGE_UP) {
+			$this->_selectedIndex-=$height;
+			$render = true;
+		}
+		if ($hexMsg==Input::KEY_PAGE_DOWN) {
+			$this->_selectedIndex+=$height;
+			$render = true;
+		}
+		if ($hexMsg==Input::KEY_HOME) {
+			$this->_selectedIndex=0;
+			$render = true;
+		}
+		if ($hexMsg==Input::KEY_END) {
+			$this->_selectedIndex=count($this->_data)-1;
+			$render = true;
 		}
 		if ($this->_holeHPosition<0) {
 			$this->_holeHPosition=0;
@@ -43,6 +62,9 @@ class ListBox extends VisualObject {
 		}
 		if ($this->_selectedIndex > $this->_holeVPosition + $height) {
 			$this->_holeVPosition = $this->_selectedIndex - $height;
+		}
+		if (true) {
+			$this->render();
 		}
 	}
 
@@ -79,6 +101,10 @@ class ListBox extends VisualObject {
 		}
 		return $this->_data[$this->_selectedIndex];
 	}
+	
+	public function _getLayerHole() {
+		return $this->_layerHole;
+	}
 
 	public function render() {
 		list($x,$y)=$this->getAbsolutePosition();
@@ -92,36 +118,44 @@ class ListBox extends VisualObject {
 				$height = $this->_parentObject->height-3;
 			}
 		}
-		Console::SetPos($x, $y);
-		$strheaders = array();
-		foreach($this->_columns as $column) {
-			$strheaders[] = str_pad($column->title, $column->width, ' ', $column->align);
+		$hole = $this->_layerHole;
+		if (!$hole) {
+			$hole = $this->_layerHole = $this->getScreenLayer()->addHole($x, $y, $width, $height);
 		}
-		Console::Write(substr(implode('|', $strheaders),$this->_holeHPosition,$width));
-		$strheaders = array();
+		$this->width = $width;
+		$this->height = $height;
+		$hole->offsetX = $this->_holeHPosition;
+		$hpos = 1;
 		foreach($this->_columns as $column) {
-			$strheaders[] = str_repeat('-', $column->width);
+			$hole->color(36);
+			$hole->setPos($hpos,1);
+			$hole->write(str_pad($column->title, $column->width, ' ', $column->align));
+			$hole->color(0);
+			$hole->write('|');
+			$hole->setPos($hpos,2);
+			$hole->write(str_repeat('-', $column->width).'+');
+			$hpos += $column->width+1; // because there is a separator char between columns;
 		}
-		Console::SetPos($x, ++$y);
-		Console::Write(substr(implode('+', $strheaders),$this->_holeHPosition,$width));
 
+		$yp = 1;
 		foreach($this->_data as $index => $row) {
 			if ($index >= $this->_holeVPosition && $index <= $this->_holeVPosition+$height) {
 				$strrow = array();
+				$hole->setPos(1,2+($yp++));
+				if ($index==$this->_selectedIndex) {
+					$hole->color('0;30;46');
+				}
 				foreach($this->_columns as $column) {
 					$value = '';
 					if (isset($row[$column->name])) {
 						$value = $row[$column->name];
 					}
-					$strrow[] = str_pad($value, $column->width, ' ', $column->align);
+					$content = str_pad($value, $column->width, ' ', $column->align);
+					$content = substr($content, 0, $column->width);
+					$content = str_pad($content, $column->width, ' ', $column->align);
+					$hole->write($content . '|');
 				}
-
-				Console::SetPos($x, ++$y);
-				if ($index==$this->_selectedIndex) {
-					Console::Color('7');
-				}
-				Console::Write(substr(implode('|', $strrow),$this->_holeHPosition,$width));
-				Console::Color('0');
+				$hole->color('0');
 			}
 		}
 	}

@@ -9,10 +9,7 @@ class Console {
 	static public function GetDimensions() {
 		$res = array();
 		preg_match("/rows.([0-9]+);\scolumns\s([0-9]+);/", strtolower(exec('stty -a |grep columns')), $res);
-		return array(
-			'x'=>$res[2],
-			'y'=>$res[1],
-		);
+		return array($res[2], $res[1]);
 	}
 	
     static public function Clear() {
@@ -66,7 +63,7 @@ class Console {
     }
     static private function _getInPointer() {
         if (self::$_inPointer===NULL) {
-			system("stty -icanon");
+			system("stty -icanon -echo");
             self::$_inPointer = fopen('php://stdin', 'w');
 			stream_set_blocking(self::$_inPointer, 0);
         }

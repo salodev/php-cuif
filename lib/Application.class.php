@@ -35,6 +35,7 @@ abstract class Application {
         }
         
         if ($this->_objects[$index] instanceof VisualObject) {
+			$this->_objects[$index]->hide();
             $this->removeObject($index);
         }
     }
@@ -48,6 +49,7 @@ abstract class Application {
     }
     
     final public function render() {
+		$layer = Screen::GetInstance()->getLayerByIndex(0);
         foreach($this->_objects as $object) {
             $object->render();
         }
@@ -57,15 +59,16 @@ abstract class Application {
 		}
 		
 		$toolKeys = $aw->getToolKeys();
-		$cdim = Console::GetDimensions();
-		Console::SetPos(1, $cdim['y']);
+		list(, $cdimY) = Console::GetDimensions();
+		$layer->setPos(1, $cdimY);
 		foreach($toolKeys as $key => $text) {
-			Console::Write("{$key} ");
-			Console::Color('7');
-			Console::Write(" {$text} ");
-			Console::Color(0);
-			Console::Write("  ");
+			$layer->write("{$key} ");
+			$layer->color('7');
+			$layer->write(" {$text} ");
+			$layer->color(0);
+			$layer->write("  ");
 		}
+		Screen::GetInstance()->refresh();
     }
     
     public function addObject(VisualObject $object){

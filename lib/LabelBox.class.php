@@ -6,8 +6,9 @@ class LabelBox extends VisualObject {
     public $value = null;
     
     public function render() {
+		$layer = $this->getScreenLayer();
 		list($x,$y) = $this->getAbsolutePosition();
-        Console::SetPos($x, $y);
-        Console::Write($this->value);
+        $layer->setPos($x, $y);
+        $layer->write($this->value);
     }
 }
