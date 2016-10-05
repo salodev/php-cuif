@@ -23,6 +23,7 @@ class TableWindow extends \Window{
 		$this->title = $this->_tableName . ' TABLE';
 		$this->maximize();
 		$this->list = $this->createObject('ListBox');
+		$this->list->y = 3;
 		$this->_connection->query('DESCRIBE ' . $this->_tableName, function($rs) {
 			$this->_columns = $rs;
 			foreach($rs as $row) {
