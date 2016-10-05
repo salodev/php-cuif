@@ -58,6 +58,22 @@ class ScreenLayer {
 		$this->_cursorX +=strlen($characters);
 	}
 	
+	public function setColor($f, $x, $y) {
+		$key = "{$y};{$x}";
+		if (isset($this->_data[$key])) {
+			$this->_data[$key][0] = $f;
+		}
+	}
+	
+	public function setLinecolor($f,$y) {
+		for($x=1; $x<=$this->width;$x++) {
+			$key = "{$y};{$x}";
+			if (isset($this->_data[$key])) {
+				$this->_data[$key][0] = $f;
+			}
+		}
+	}
+	
 	public function getData() {
 		$this->finalData = $this->_data;
 		foreach($this->_holes as $hole) {

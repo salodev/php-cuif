@@ -75,6 +75,7 @@ class InputBox extends VisualObject {
         if ($teclaHex==Input::KEY_END) {
             $this->_cursorPos = strlen($this->value);
         }
+		$this->render();
     }
     
     public function render() {

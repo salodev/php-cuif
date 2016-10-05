@@ -29,6 +29,7 @@ class CUIF {
 				if ($keyDebug) {
 					Console::Write('Printable Pressed Key: ' . $input,0,1);
 					Console::Write('HEX Pressed Key      : ' . bin2hex($input),0,2);
+					Console::Write('Count of Layers      : ' . Screen::GetInstance()->getLayersCount(),0,3);
 				}
 				Console::SetPos(1,1);
                 Console::ShowCursorStatic();

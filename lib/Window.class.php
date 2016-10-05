@@ -6,18 +6,32 @@ class Window extends VisualObject {
 	const MINIMIZED = 2;
 	
     public $tabStop = 0;
-    public $x = 10;
-    public $y = 10;
-	public $xOffset = 1;
-	public $yOffset = 3;
-    public $height = 10;
-    public $width = 40;
-    public $title = null;
 	public $windowIndex = null;
-	public $sizeStatus = Window::NORMAL;
+    protected $_x = 10;
+    protected $_y = 10;
+    protected $_height = 10;
+    protected $_width = 40;
+    protected $_title = null;
+	protected $_sizeStatus = Window::NORMAL;
     protected $_focusedObject = null;
 	private $_toolKeys = array();
 	private $_orignalSizeAndPosition = array();
+	
+	public function __get_title() {
+		return $this->_title;
+	}
+	
+	public function __set_title($v) {
+		$this->_title = $v;
+	}
+	
+	public function __get_sizeStatus() {
+		return $this->_sizeStatus;
+	}
+	
+	public function __set_sizeStatus($v) {
+		$this->_sizeStatus = $v;
+	}
 	
 	public function addToolKey($key, $text) {
 		$this->_toolKeys[$key] = $text;
@@ -44,6 +58,7 @@ class Window extends VisualObject {
         $object = $this->_objects[$index];
         $this->_focusedObject = $object;
         $object->focused();
+		$this->render();
     }
     
     public function prevTabStop() {
@@ -61,7 +76,7 @@ class Window extends VisualObject {
 	public function maximize() {
 		$this->_orignalSizeAndPosition = array(
 			'x' => $this->x,
-			'y' => $this->x,
+			'y' => $this->y,
 			'width' => $this->width,
 			'height' => $this->height,
 		);
@@ -133,6 +148,19 @@ class Window extends VisualObject {
             $object->render();
         }
     }
+	
+	public function getAbsolutePosition() {
+		return [$this->x, $this->y];
+	}
+	
+	public function getInnerDimensions() {
+		return [$this->width-2, $this->height-3];
+	}
+	
+	public function getInnerPosition() {
+		list($x, $y) = $this->getAbsolutePosition();
+		return [$x+1, $y+3];
+	}
     
     public function createInputBox($x, $y, $label, $value = null, $hideMask=null) {
         return $this->createObject('InputBox', array(

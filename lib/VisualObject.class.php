@@ -7,11 +7,29 @@ abstract class VisualObject {
     protected $_parentObject = null;
 	protected $_eventsHandler = null;
 	protected $_screenLayer = null;
-
-    public $x = 0;
-    public $y = 0;
-	public $xOffset = 0;
-	public $yOffset = 0;
+	
+	protected $_x = 0;
+	protected $_y = 0;
+	protected $_width = 1;
+	protected $_height = 1;
+	
+	final public function __get($name) {
+		$fn = array($this, "__get_{$name}");
+		if (is_callable($fn)) {
+			return $fn();
+		}
+		if (isset($this->$name)) {
+			return $this->$name;
+		}
+	}
+	
+	final public function __set($name, $value) {
+		$fn = array($this, "__set_{$name}");
+		if (is_callable($fn)) {
+			return $fn($value);
+		}
+		$this->$name = $value;
+	}
 	
     final public function __construct(Application $application, $parentObject = null, array $params = array()) {
         $this->_application = $application;
@@ -21,9 +39,46 @@ abstract class VisualObject {
         }
         $this->_parentObject = $parentObject;
 		$this->getScreenLayer();
+		$this->_construct($params);
         $this->init($params);
 		$this->render();
     }
+	
+	protected function _construct(array $params = array()) {
+		
+	}
+	
+	public function __get_x() {
+		return $this->_x;
+	}
+	
+	public function __set_x($x) {
+		$this->_x = $x;
+	}
+	
+	public function __get_y() {
+		return $this->_y;
+	}
+	
+	public function __set_y($y) {
+		$this->_y = $y;
+	}
+	
+	public function __get_width() {
+		return $this->_width;
+	}
+	
+	public function __set_width($width) {
+		$this->_width = $width;
+	}
+	
+	public function __get_height() {
+		return $this->_height;
+	}
+	
+	public function __set_height($height) {
+		$this->_height = $height;
+	}
 	
 	public function trigger($eventName, $params = null) {
 		$this->_eventsHandler->trigger($eventName, $this, $params);
@@ -70,11 +125,15 @@ abstract class VisualObject {
 		$parentX = 0;
 		$parentY = 0;
 		if ($this->_parentObject instanceof VisualObject) {
-			$pos = $this->_parentObject->getAbsolutePosition();
+			$pos = $this->_parentObject->getInnerPosition();
 			$parentX = $pos[0];
 			$parentY = $pos[1];
 		}
-		return array($this->x + $this->xOffset + $parentX, $this->y + $this->yOffset + $parentY);
+		return array($this->x + $parentX, $this->y + $parentY);
+	}
+	
+	public function getInnerPosition() {
+		return $this->getAbsolutePosition();
 	}
     
     public function openWindow($className) {
@@ -85,6 +144,10 @@ abstract class VisualObject {
 		
 	}
 	
+	/**
+	 * 
+	 * @return ScreenLayer $screenLayer;
+	 */
 	public function getScreenLayer() {
 		if ($this->_screenLayer===null) {
 			if ($this->_parentObject!==null) {
@@ -93,6 +156,10 @@ abstract class VisualObject {
 			$this->_screenLayer = Screen::GetInstance()->createLayer();
 		}
 		return $this->_screenLayer;
+	}
+	
+	public function getInnerDimensions() {
+		return [$this->width, $this->height];
 	}
 	
     abstract public function render();

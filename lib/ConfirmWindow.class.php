@@ -2,7 +2,7 @@
 
 class ConfirmWindow extends Window {
 	public function init(array $params = array()) {
-		$this->title=&$params['title'];
+		$this->title=$params['title'];
 		$this->createLabelBox(1, 0, $params['text']);
 		$this->height=1;
 		$this->setToolKeys(array(
