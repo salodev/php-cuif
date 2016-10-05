@@ -6,50 +6,76 @@ class ListBox extends VisualObject {
 	private $_selectedIndex = 0;
 	private $_holeVPosition  = 0;
 	private $_holeHPosition  = 0;
-	private $_layerHole = null;
+	private $_headerHole = null;
+	private $_bodyHole = null;
 	public $height = null;
 	public $width  = null;
+	
+	public function __set_x($x) {
+		$this->_x = $x;
+		$this->_headerHole->x = $x;
+		$this->_bodyHole->x = $x;
+	}
+	
+	public function __set_y($y) {
+		$this->_y = $y;
+		$this->_headerHole->y = $y;
+		$this->_bodyHole->y = $y+2;
+	}
+	
+	public function __set_height($height) {
+		$this->_height = $height;
+		$this->_headerHole->height = 2;
+		$this->_bodyHole->height = $height-2;
+	}
+	
+	public function __set_width($width) {
+		$this->_width = $width;
+		$this->_headerHole->width = $width;
+		$this->_bodyHole->width = $width;
+	}
+	
+	protected function _construct(array $params = array()) {
+		list($x, $y) = $this->getAbsolutePosition();
+		list($width, $height) = $this->_parentObject->getInnerDimensions();
+		$this->_headerHole = $this->getScreenLayer()->addHole($x, $y, $width, 2);
+		$this->_bodyHole   = $this->getScreenLayer()->addHole($x, $y+2, $width, $height-2);
+	}
 
 	public function input($msg, $hexMsg) {
-		$render = false;
-		$height = $this->height;
-		if ($this->_parentObject != null) {
-			if ($height == null) {
-				$height = $this->_parentObject->height-3;
-			}
-		}
+		list(,$height) = $this->getDimensions();
 		if ($hexMsg==Input::KEY_ARROW_UP) {
-			$this->_selectedIndex--;
-			$render = true;
+			$this->moveSelection(-1, false);
 		}
 		if ($hexMsg==Input::KEY_ARROW_DOWN) {
-			$this->_selectedIndex++;
-			$render = true;
+			$this->moveSelection(1, false);
 		}
 		if ($hexMsg==Input::KEY_ARROW_LEFT) {
-			$this->_holeHPosition-=4;
+			$this->scrollHorizontal(-4, false);
 		}
 		if ($hexMsg==Input::KEY_ARROW_RIGHT) {
-			$this->_holeHPosition+=4;
+			$this->scrollHorizontal(4, false);
 		}
 		if ($hexMsg==Input::KEY_PAGE_UP) {
-			$this->_selectedIndex-=$height;
-			$render = true;
+			$this->moveSelection($height*-1, false);
 		}
 		if ($hexMsg==Input::KEY_PAGE_DOWN) {
-			$this->_selectedIndex+=$height;
-			$render = true;
+			$this->moveSelection($height, false);
 		}
 		if ($hexMsg==Input::KEY_HOME) {
-			$this->_selectedIndex=0;
-			$render = true;
+			$this->moveSelection(0);
 		}
 		if ($hexMsg==Input::KEY_END) {
-			$this->_selectedIndex=count($this->_data)-1;
-			$render = true;
+			$this->moveSelection(count($this->_data)-1);
 		}
-		if ($this->_holeHPosition<0) {
-			$this->_holeHPosition=0;
+	}
+	
+	public function moveSelection($index = 0, $absolute = true) {
+		$this->_bodyHole->setLineColor(0, $this->_selectedIndex+1);
+		if ($absolute) {
+			$this->_selectedIndex = $index;
+		} else {
+			$this->_selectedIndex += $index;
 		}
 		if ($this->_selectedIndex<0) {
 			$this->_selectedIndex = 0;
@@ -60,12 +86,26 @@ class ListBox extends VisualObject {
 		if ($this->_selectedIndex < $this->_holeVPosition) {
 			$this->_holeVPosition = $this->_selectedIndex;
 		}
-		if ($this->_selectedIndex > $this->_holeVPosition + $height) {
-			$this->_holeVPosition = $this->_selectedIndex - $height;
+		if ($this->_selectedIndex > $this->_holeVPosition + $this->_bodyHole->height) {
+			$this->_holeVPosition = $this->_selectedIndex - $this->_bodyHole->height;
 		}
-		if (true) {
-			$this->render();
+		$this->_bodyHole->setLineColor('0;30;46', $this->_selectedIndex+1);
+		$this->_bodyHole->offsetY = $this->_holeVPosition;
+		Screen::GetInstance()->refresh();
+	}
+	
+	public function scrollHorizontal($offset, $absolute = true) {
+		if ($absolute) {
+			$this->_holeHPosition = $offset;
+		} else {
+			$this->_holeHPosition += $offset;
 		}
+		if ($this->_holeHPosition<0) {
+			$this->_holeHPosition=0;
+		}
+		$this->_headerHole->offsetX = $this->_holeHPosition;
+		$this->_bodyHole->offsetX   = $this->_holeHPosition;
+		Screen::GetInstance()->refresh();
 	}
 
 	public function addColumn($title, $name, $width, $align = 1, $visible = true) {
@@ -102,61 +142,51 @@ class ListBox extends VisualObject {
 		return $this->_data[$this->_selectedIndex];
 	}
 	
-	public function _getLayerHole() {
-		return $this->_layerHole;
-	}
-
-	public function render() {
-		list($x,$y)=$this->getAbsolutePosition();
+	public function getDimensions() {
 		$width = $this->width;
 		$height = $this->height;
 		if ($this->_parentObject != null) {
+			list($pw,$ph) = $this->_parentObject->getInnerDimensions();
 			if ($width == null) {
-				$width = $this->_parentObject->width-2;
+				$width = $pw;
 			}
 			if ($height == null) {
-				$height = $this->_parentObject->height-3;
+				$height = $ph;
 			}
 		}
-		$hole = $this->_layerHole;
-		if (!$hole) {
-			$hole = $this->_layerHole = $this->getScreenLayer()->addHole($x, $y, $width, $height);
-		}
-		$this->width = $width;
-		$this->height = $height;
-		$hole->offsetX = $this->_holeHPosition;
+		return [$width, $height];
+	}
+
+	public function render() {
 		$hpos = 1;
 		foreach($this->_columns as $column) {
-			$hole->color(36);
-			$hole->setPos($hpos,1);
-			$hole->write(str_pad($column->title, $column->width, ' ', $column->align));
-			$hole->color(0);
-			$hole->write('|');
-			$hole->setPos($hpos,2);
-			$hole->write(str_repeat('-', $column->width).'+');
+			$this->_headerHole->color(36);
+			$this->_headerHole->setPos($hpos,1);
+			$this->_headerHole->write(str_pad($column->title, $column->width, ' ', $column->align));
+			$this->_headerHole->color(0);
+			$this->_headerHole->write('|');
+			$this->_headerHole->setPos($hpos,2);
+			$this->_headerHole->write(str_repeat('-', $column->width).'+');
 			$hpos += $column->width+1; // because there is a separator char between columns;
 		}
 
 		$yp = 1;
 		foreach($this->_data as $index => $row) {
-			if ($index >= $this->_holeVPosition && $index <= $this->_holeVPosition+$height) {
-				$strrow = array();
-				$hole->setPos(1,2+($yp++));
-				if ($index==$this->_selectedIndex) {
-					$hole->color('0;30;46');
-				}
-				foreach($this->_columns as $column) {
-					$value = '';
-					if (isset($row[$column->name])) {
-						$value = $row[$column->name];
-					}
-					$content = str_pad($value, $column->width, ' ', $column->align);
-					$content = substr($content, 0, $column->width);
-					$content = str_pad($content, $column->width, ' ', $column->align);
-					$hole->write($content . '|');
-				}
-				$hole->color('0');
+			$this->_bodyHole->setPos(1,$yp++);
+			if ($index==$this->_selectedIndex) {
+				$this->_bodyHole->color('0;30;46');
 			}
+			foreach($this->_columns as $column) {
+				$value = '';
+				if (isset($row[$column->name])) {
+					$value = $row[$column->name];
+				}
+				$content = str_pad($value, $column->width, ' ', $column->align);
+				$content = substr($content, 0, $column->width);
+				$content = str_pad($content, $column->width, ' ', $column->align);
+				$this->_bodyHole->write($content . '|');
+			}
+			$this->_bodyHole->color('0');
 		}
 	}
 }

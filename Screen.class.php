@@ -8,6 +8,10 @@ class Screen {
 	private $_dimensions = null;
 	static private $_instance = null;
 	
+	/**
+	 * 
+	 * @return Screen $screen;
+	 */
 	static public function GetInstance() {
 		if (self::$_instance===null){
 			self::$_instance = new Screen;
@@ -17,6 +21,10 @@ class Screen {
 	
 	static public function Put($characters, $x = null, $y = null){
 		self::GetInstance()->write($characters, $x, $y);
+	}
+	
+	public function getLayersCount() {
+		return count($this->_layers);
 	}
 	
 	public function __construct() {
