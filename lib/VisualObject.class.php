@@ -1,6 +1,10 @@
 <?php
 
 abstract class VisualObject {
+	/**
+	 *
+	 * @var Application; 
+	 */
     protected $_application = null;
     protected $_objects = array();
     protected $_focus = false;
@@ -40,8 +44,6 @@ abstract class VisualObject {
         $this->_parentObject = $parentObject;
 		$this->getScreenLayer();
 		$this->_construct($params);
-        $this->init($params);
-		$this->render();
     }
 	
 	protected function _construct(array $params = array()) {
@@ -87,6 +89,14 @@ abstract class VisualObject {
 	public function bind($eventName, $eventListener, $persistent = true) {
 		$this->_eventsHandler->addListener($eventName, $eventListener, $persistent);
 	}
+	
+	public function keyPress($keySpec, $eventListener, $persistent = true) {
+		$this->bind('keyPress', function(Input $input) use ($keySpec, $eventListener) {
+			if ($input->spec===$keySpec) {
+				$eventListener($input);
+			}
+		}, $persistent);
+	}
     
     public function init(array $params = array()) {}
 
@@ -112,6 +122,12 @@ abstract class VisualObject {
         $this->_focus = false;
     }
     
+	/**
+	 * 
+	 * @param string $className
+	 * @param array $attributes
+	 * @return VisualObject
+	 */
     public function createObject($className, array $attributes = array()) {
         $object= new $className($this->_application, $this);
         foreach($attributes as $attrName => $attrValue) {
@@ -140,7 +156,7 @@ abstract class VisualObject {
         return $this->_application->openWindow($className);
     }
     
-	public function input($mensaje, $mensajeHex) {
+	public function input(Input $input) {
 		
 	}
 	

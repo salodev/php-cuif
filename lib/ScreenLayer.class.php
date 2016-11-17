@@ -10,6 +10,7 @@ class ScreenLayer {
 	private $_holes = array();
 	public $fullScreen = false;
 	public $finalData = array();
+	public $visible = true;
 	
 	public function addHole($x, $y, $width, $height) {
 		$hole = new LayerHole($x, $y, $width, $height);
@@ -43,19 +44,22 @@ class ScreenLayer {
 	}
 	
 	public function write($characters, $x = null, $y = null) {
+		$characters = str_replace("\n", '', $characters);
+		$characters = str_replace("\r", '', $characters);
+		$characters = str_replace("\t", '    ', $characters);
 		if ($x !==null&&$y!==null){
 			$this->setPos($x, $y);
 		} else {
 			$x = $this->_cursorX;
 			$y = $this->_cursorY;
 		}
-		$arrCharacters = str_split($characters);
+		$arrCharacters = str_split_unicode($characters);
 		foreach($arrCharacters as $i => $ch) {
 			$yAbs = $y;
 			$xAbs = $x + $i;
 			$this->_data["{$yAbs};{$xAbs}"] = [$this->_fcolor, $this->_bcolor, $ch];
 		}
-		$this->_cursorX +=strlen($characters);
+		$this->_cursorX += count($arrCharacters);
 	}
 	
 	public function setColor($f, $x, $y) {

@@ -1,10 +1,10 @@
 <?php
 
 class ExceptionWindow extends Window {
-	public function init($params) {
+	public function init(array $params = array()) {
 		$exception = $params['exception'];
 		list($w,$h)=Console::GetDimensions();
-		$this->title = $exception->getMessage();
+		$this->title = $exception->getMessage() . ' (' . $exception->getCode() . ')  in file ' . $exception->getFile() . ' at line ' . $exception->getLine();
 		$this->width = 100;
 		$this->height = 20;
 		$this->x = round(($w - $this->width) / 2);

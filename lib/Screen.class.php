@@ -6,6 +6,7 @@ class Screen {
 	private $_baseLayer = null;
 	private $_endLayer  = null;
 	private $_dimensions = null;
+	private $_changed = false;
 	static private $_instance = null;
 	
 	/**
@@ -17,6 +18,10 @@ class Screen {
 			self::$_instance = new Screen;
 		}
 		return self::$_instance;
+	}
+	
+	public function changed() {
+		$this->_changed = true;
 	}
 	
 	static public function Put($characters, $x = null, $y = null){
@@ -35,31 +40,30 @@ class Screen {
 		$this->_activeLayer->write($characters, $x, $y);
 	}
 	
-	public function topLayer($index) {
-		if (!isset($this->_layers[$index])) {
-			throw new Exception("Layer index ($index) not exists");
-		}
+	public function topLayer(ScreenLayer $layer) {
 		$newArr = $this->_layers;
 		$this->_layers = array();
-		foreach($newArr as $i => $layer) {
-			if ($i === $index) {
-				continue;
-			} else {
-				$this->_layers[] = $layer;
+		foreach($newArr as $i => $testLayer) {
+			if ($testLayer !== $layer) {
+				$this->_layers[] = $testLayer;
 			}
 		}
-		$this->_layers[] = $newArr[$index];
-		$this->_activeLayer = $newArr[$index];
+		$this->_layers[] = $layer;
+		$this->_activeLayer = $layer;
 	}
 	
-	public function removeTopLayer() {
-		end($this->_layers);
-		$i = key($this->_layers);
-		unset($this->_layers[$i]);
-		end($this->_layers);
-		$i = key($this->_layers);
-		$this->_activeLayer = $this->_layers[$i];
-		reset($this->_layers);
+	public function removeLayer(ScreenLayer $layer) {
+		foreach($this->_layers as $k => $l) {
+			if ($l === $layer) {
+				unset($this->_layers[$k]);
+				break;
+			}
+		}
+		if ($this->_activeLayer===$layer) {
+			end($this->_layers);
+			$this->_activeLayer = current($this->_layers);
+			reset($this->_layers);
+		}
 	}
 	
 	public function createLayer() {
@@ -117,12 +121,16 @@ class Screen {
 		}
 	}
 	
-	public function refresh() {
+	public function refresh($force = false) {
+		if (!$this->_changed && $force == false) {
+			return;
+		}
+		$this->_changed = false;
 		$ob = '';
 		$ts1 = microtime(true);
 		$this->mergeLayers();
 		$ts2 = microtime(true) - $ts1;
-		file_put_contents('salo.log', "\nGENERAR PANTALLA: {$ts2}\n", FILE_APPEND);
+		// file_put_contents('salo.log', "\nGENERAR PANTALLA: {$ts2}\n", FILE_APPEND);
 		
 		/**
 		 * $endLayer[y][x] = [fgc,bgc,content];
@@ -160,6 +168,6 @@ class Screen {
 			$ob = '';
 		}
 		$ts2 = microtime(true) - $ts1;
-		file_put_contents('salo.log', "DIBUJAR PANTALLA: {$ts2}\n\n", FILE_APPEND);
+		// file_put_contents('salo.log', "DIBUJAR PANTALLA: {$ts2}\n\n", FILE_APPEND);
 	}
 }

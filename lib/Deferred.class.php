@@ -3,7 +3,7 @@
 class Deferred {
 	const NO_RESULT = 0;
 	const DONE = 1;
-	const FAIL = 1;
+	const FAIL = 2;
 	private $_doneFns = array();
 	private $_failFns = array();
 	private $_alwaysFns = array();
@@ -53,7 +53,7 @@ class Deferred {
 		if ($this->_state==Deferred::DONE || $this->_state==Deferred::FAIL) {
 			$callback($this->_result);
 		} else {
-			$this->$_alwaysFns[] = $callback;
+			$this->_alwaysFns[] = $callback;
 		}
 		return $this;
 	}

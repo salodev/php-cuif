@@ -1,6 +1,16 @@
 <?php
 abstract class Application {
     protected $_objects = array();
+	/**
+	 *
+	 * @var Window 
+	 */
+	protected $_activeWindow;
+	/**
+	 *
+	 * @var Winow
+	 */
+	protected $_prevActiveWindow;
 	private $_eventsHandler = null;
 	
 	final public function __construct() {
@@ -16,35 +26,40 @@ abstract class Application {
 	}
     
     public function getActiveWindow() {
-        $index = count($this->_objects) -1;
-        if ($index <0) {
-            return false;
-        }
-        
-        if ($this->_objects[$index] instanceof VisualObject) {
-            return $this->_objects[$index];
-        }
-        
-        return false;
+		return $this->_activeWindow;
     }
+	
+	public function closeWindow(Window $window) {
+		$this->removeObject($window);
+		if ($this->_activeWindow === $window) {
+			$this->autoSetActiveWindow();
+		}
+	}
     
     public function closeActiveWindow() {
-        $index = count($this->_objects) -1;
-        if ($index <0) {
-            return false;
-        }
-        
-        if ($this->_objects[$index] instanceof VisualObject) {
-			$this->_objects[$index]->hide();
-            $this->removeObject($index);
-        }
+		if ($this->_activeWindow instanceof Window) {
+			$this->_activeWindow->close();
+		}
+		$this->autoSetActiveWindow();
     }
+	
+	public function autoSetActiveWindow() {
+		if (count($this->_objects)) {
+			end($this->_objects);
+			$lastWindow = current($this->_objects);
+			reset($this->_objects);
+			$this->setActiveWindow($lastWindow);
+		}
+	}
     
-    final public function input($message, $messageHex) {
-        $this->trigger('keyPress', array($message, $messageHex));
+    final public function input(Input $input) {
+        $this->trigger('keyPress', $input);
+		if ($input->spec) {
+			$this->trigger('keyPress_' . $input->spec);
+		}
         $window = $this->getActiveWindow();
-        if ($window) {
-            $window->input($message, $messageHex);
+        if ($window instanceof Window) {
+            $window->input($input);
         }
     }
     
@@ -75,9 +90,13 @@ abstract class Application {
         $this->_objects[] = $object;
     }
     
-    public function removeObject($index) {
-        unset($this->_objects[$index]);
-        $this->_objects = array_values($this->_objects);
+    public function removeObject(VisualObject $object) {
+		foreach($this->_objects as $index => $testObject) {
+			if ($testObject===$object) {
+				unset($this->_objects[$index]);
+				break;
+			}
+		}
     }
     
     public function show(VisualObject $object) {
@@ -96,11 +115,26 @@ abstract class Application {
 		return count($this->_objects);
 	}
     
-    public function openWindow($className, array $params = array()) {
-        $windowObject = new $className($this, null, $params);
-        $this->addObject($windowObject);
-        return $windowObject;
+	/**
+	 * 
+	 * @param type $className
+	 * @param array $params
+	 * @return \Window
+	 */
+    public function openWindow($className = 'Window', array $params = array()) {
+        $window = new $className($this, null, $params);
+        $this->addObject($window);
+		$this->_prevActiveWindow = $this->_activeWindow;
+		$this->setActiveWindow($window);
+		$window->init($params);
+		$window->render();
+        return $window;
     }
+	
+	public function setActiveWindow(Window $window) {
+		$this->_activeWindow = $window;
+		$window->moveToTop();
+	}
 	
 	public function confirmWindow($text, $fnConfirm = null, $fnCancel = null) {
 		$window = $this->openWindow('ConfirmWindow', array(

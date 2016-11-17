@@ -6,8 +6,9 @@ class Button extends VisualObject {
     public $width = null;
     public $label = null;
     public $onPress = null;
-    public function input($tecla, $teclaHex) {
-        if ($teclaHex==Input::KEY_RETURN) {
+    public function input(Input $input) {
+        if ($input->spec=='RETURN') {
+			$this->trigger('press');
             call_user_func($this->onPress);
         }
     }
@@ -19,7 +20,7 @@ class Button extends VisualObject {
             $this->width = strlen($this->label)+2;
         }
         if ($this->_focus) {
-            $layer->color('7');
+            $layer->color('30;47');
         }
         $layer->write('[' . str_pad($this->label, $this->width, ' ', STR_PAD_BOTH) . ']', $x, $y);
         $layer->color('0');

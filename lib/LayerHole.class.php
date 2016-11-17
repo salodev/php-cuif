@@ -14,7 +14,16 @@ class LayerHole extends ScreenLayer{
 		$this->height = $height;
 		for($h=1;$h<=$height;$h++) {
 			for($w=1;$w<=$width;$w++){
-				$this->write(' ', $x, $y);
+				// $this->write(' ', $w, $h);
+			}
+		}
+	}
+	
+	public function setLinecolor($f,$y) {
+		for($x=1+$this->offsetX; $x<=$this->width+$this->offsetX;$x++) {
+			$key = "{$y};{$x}";
+			if (isset($this->_data[$key])) {
+				$this->_data[$key][0] = $f;
 			}
 		}
 	}

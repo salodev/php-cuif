@@ -3,9 +3,10 @@
 class CheckBox extends VisualObject {
     public $label = null;
     public $checked = false;
-    public function input($tecla, $teclaHex) {
-        if ($teclaHex==Input::KEY_SPACE) {
+    public function input(Input $input) {
+        if ($input->spec=='SPACE') {
             $this->checked = !$this->checked;
+			$this->trigger('press');
         }
     }
 

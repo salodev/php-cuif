@@ -20,7 +20,7 @@ class Console {
     }
 	static public function Read() {
 		$i = self::_getInPointer();
-		return fread($i,8);
+		return fread($i,16);
 	}
     static public function Write($text, $x=null, $y=null) {
         if ($x !==null&&$y!==null){
