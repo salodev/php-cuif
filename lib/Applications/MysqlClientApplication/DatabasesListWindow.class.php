@@ -12,11 +12,10 @@ class DatabasesListWindow extends \Window {
 			'F7'    => 'Crear BBDD',
 			'ESC'   => 'Cerrar',
 		));
-		$this->bind('keyPress', function($params) {
-			list($key,$keyHex) = $params;
-			if ($keyHex==\Input::KEY_RETURN) {
+		$this->bind('keyPress', function(\Input $input) {
+			if ($input->spec=='RETURN') {
 				$this->_application->openWindow('Applications\MysqlClientApplication\TablesListWindow', array(
-					'database' => $this->list->getDataRow('Database'),
+					'database' => $this->list->getRowData('Database'),
 					'connection' => $this->_connection,
 				));
 			}

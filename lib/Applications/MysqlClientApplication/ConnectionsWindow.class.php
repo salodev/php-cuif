@@ -2,7 +2,7 @@
 namespace Applications\MysqlClientApplication;
 
 class ConnectionsWindow extends \Window {
-	public function init() {
+	public function init(array $params = array()) {
 		$this->x = 5;
 		$this->y = 5;
 		$this->width=64;
@@ -19,18 +19,16 @@ class ConnectionsWindow extends \Window {
 			'ENTER' => 'Login',
 		));
 		$this->refreshList();
-		$self = $this;
-		$this->bind('keyPress', function($params, $source) use($self) {
-			list($key,$keyHex)=$params;
-			if ($key=='+') {
-				$window = $self->_application->openWindow('Applications\MysqlClientApplication\AddConnectionWindow');
-				$window->bind('saved', function($params, $source) use ($self) {
-					$self->_application->closeActiveWindow();
-					$self->refreshList();
+		$this->bind('keyPress', function(\Input $input) {
+			if ($input->raw=='+') {
+				$window = $this->_application->openWindow('Applications\MysqlClientApplication\AddConnectionWindow');
+				$window->bind('saved', function($params, $source) {
+					$this->_application->closeActiveWindow();
+					$this->refreshList();
 				});
 			}
-			if ($keyHex==\Input::KEY_F2) {
-				$row = $this->list->getDataRow();
+			if ($input->spec=='F2') {
+				$row = $this->list->getRowData();
 				$window = $this->_application->openWindow('Applications\MysqlClientApplication\AddConnectionWindow', array(
 					'name'=>$row['name'],
 					'host'=>$row['host'],
@@ -38,13 +36,13 @@ class ConnectionsWindow extends \Window {
 					'pass'=>$row['pass'],
 					'db'  =>$row['db'  ],
 				));
-				$window->bind('saved', function($params, $source) use ($self) {
-					$self->_application->closeActiveWindow();
-					$self->refreshList();
+				$window->bind('saved', function($params, $source) {
+					$this->_application->closeActiveWindow();
+					$this->refreshList();
 				});
 			}
-			if ($keyHex==\Input::KEY_RETURN) {
-				$row = $this->list->getDataRow();
+			if ($input->spec=='RETURN') {
+				$row = $this->list->getRowData();
 				$connection = new \MysqlConnection($row['host'], $row['user'], $row['pass'], $row['db']);
 				$this->_application->openWindow('Applications\MysqlClientApplication\DatabasesListWindow', array(
 					'connection' => $connection,
