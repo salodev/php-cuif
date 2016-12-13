@@ -20,4 +20,6 @@ So.. what can you do with CUIF?? An image is better than much words:
 Want you improve more stuffs to mysqlnav? fork it!
 Also.. I am open for any suggestions, ideas or contributions!
 
+If you want to know and learn how CUIF works and how create your own CUI applications, read the ![wiki](https://github.com/salojc2006/php-cuif/wiki) now!
+
 I hope you find it useful.
